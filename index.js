@@ -138,7 +138,7 @@ function loadMainPrompts() {
             quit();
         }
       }
-      )
+    )
 }
 
 // Function that views all employees
