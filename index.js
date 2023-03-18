@@ -177,8 +177,8 @@ function viewAllEmployeesByDepartment() {
             console.table(employees);
           })
           .then(() => loadMainPrompts())
-      });
-  }
+    });
+}
 
 // Function that views all employees that belong to a specific Manager
 function viewAllEmployeesByManager() {
@@ -203,7 +203,79 @@ function viewAllEmployeesByManager() {
               let employees = rows;
               console.log("\n");
               console.table(employees);
+          })
+          .then(() => loadMainPrompts())
+    });
+}
+
+// Function to add an employee
+function addEmployee() {
+    prompt([
+      {
+        name: "first_name",
+        message: "What is the employee's first name?"
+      },
+      {
+        name: "last_name",
+        message: "What is the employee's last name?"
+      }
+    ])
+      .then(res => {
+        let firstName = res.first_name;
+        let lastName = res.last_name;
+      
+        db.findAllRoles()
+        .then(([rows]) => {
+        let roles = rows;
+        const roleChoices = roles.map(({ id, name }) => ({
+            name: name,
+            value: id,
+          }));
+
+          prompt({
+              type: "list",
+              name: "roleId",
+              message: "What is the employee's role?",
+              choices: roleChoices
             })
-            .then(() => loadMainPrompts())
-        });
+            .then(res => {
+                let roleId = res.roleId;
+
+                db.findAllEmployees()
+                .then(([rows]) => {
+                  let employees = rows;
+                  const managerChoices = employees.map(({ id, first_name, last_name }) => ({
+                    name: `${first_name} ${last_name}`,
+                    value: id
+                  }));
+
+                  prompt({
+                    type: "list",
+                    name: "managerId",
+                    message: "Who is the employee's manager?",
+                    choices: managerChoices
+                  })
+                    .then(res => {
+                      let employee = {
+                        manager_id: res.managerId,
+                        role_id: roleId,
+                        first_name: firstName,
+                        last_name: lastName
+                      }
+    
+                      db.createEmployee(employee);
+                    })
+                    .then(() => console.log(
+                      `Added ${firstName} ${lastName} to the database`
+                    ))
+                      .then(() => loadMainPrompts())
+                    })
+                })
+            })
+        })
+}
+
+function quit() {
+    console.log("Goodbye!");
+    process.exit();
 }
