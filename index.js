@@ -93,13 +93,13 @@ function loadMainPrompts() {
         // Uses the corresponding function based on the users selection.
         switch (choice) {
           case "VIEW_EMPLOYEES":
-            viewEmployees();
+            viewAllEmployees();
             break;
           case "VIEW_EMPLOYEES_BY_DEPARTMENT":
-            viewEmployeesByDepartment();
+            viewAllEmployeesByDepartment();
             break;
           case "VIEW_EMPLOYEES_BY_MANAGER":
-            viewEmployeesByManager();
+            viewAllEmployeesByManager();
             break;
           case "ADD_EMPLOYEE":
             addEmployee();
@@ -113,8 +113,17 @@ function loadMainPrompts() {
           case "UPDATE_EMPLOYEE_MANAGER":
             updateEmployeeManager();
             break;
+          case "VIEW_ROLES":
+            viewAllRoles();
+            break;
+          case "ADD_ROLE":
+            addRole();
+            break;
+          case "REMOVE_ROLE":
+            removeRole();
+            break;
           case "VIEW_DEPARTMENTS":
-            viewDepartments();
+            viewAllDepartments();
             break;
           case "ADD_DEPARTMENT":
             addDepartment();
@@ -125,15 +134,6 @@ function loadMainPrompts() {
           case "VIEW_UTILIZED_BUDGET_BY_DEPARTMENT":
             viewUtilizedBudgetByDepartment();
             break;
-          case "VIEW_ROLES":
-            viewRoles();
-            break;
-          case "ADD_ROLE":
-            addRole();
-            break;
-          case "REMOVE_ROLE":
-            removeRole();
-            break;
           default:
             quit();
         }
@@ -142,7 +142,7 @@ function loadMainPrompts() {
 }
 
 // Function that views all employees
-function viewEmployees() {
+function viewAllEmployees() {
     db.findAllEmployees()
       .then(([rows]) => {
         let employees = rows;
@@ -152,4 +152,58 @@ function viewEmployees() {
       .then(() => loadMainPrompts());
   }
 
+// Function that views all employees that belong to a department
+function viewAllEmployeesByDepartment() {
+    db.findAllDepartments()
+      .then(([rows]) => {
+        let departments = rows;
+        const departmentChoices = departments.map(({ id, name }) => ({
+          name: name,
+          value: id,
+        }));
+  
+        prompt([
+          {
+            type: "list",
+            name: "departmentId",
+            message: "Which department would you like to see employees for?",
+            choices: departmentChoices
+          }
+        ])
+          .then(res => db.findAllEmployeesByDepartment(res.departmentId))
+          .then(([rows]) => {
+            let employees = rows;
+            console.log("\n");
+            console.table(employees);
+          })
+          .then(() => loadMainPrompts())
+      });
+  }
 
+// Function that views all employees that belong to a specific Manager
+function viewAllEmployeesByManager() {
+    db.findAllEmployeesByManager()
+    .then(([rows]) => {
+        let managers = rows;
+        const managerChoices = managers.map(({ id, first_name, last_name }) => ({
+            name: `${first_name} ${last_name}`,
+            value: id,
+        }));
+
+        prompt([
+            {
+              type: "list",
+              name: "managerId",
+              message: "Which manager do you want to see direct reports for?",
+              choices: managerChoices
+            }
+          ])
+            .then(res => db.findAllEmployeesByManager(res.managerId))
+            .then(([rows]) => {
+              let employees = rows;
+              console.log("\n");
+              console.table(employees);
+            })
+            .then(() => loadMainPrompts())
+        });
+}

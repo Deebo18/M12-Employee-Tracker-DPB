@@ -59,37 +59,53 @@ class DB {
       [managerId, employeeId]
     );
   }
+
+  // Finds all roles and joins with the department to display the departments name.
+  findAllRoles() {
+    return this.connection.promise().query(
+        "SELECT role.id, role.title, department.name AS department, role.salary FROM role LEFT JOIN department on role.department_id = department.id;"
+    );
+  }
   
-//   {
-//     name: "View All Roles",
-//     value: "VIEW_ROLES"
-//   },
-//   {
-//     name: "Add Role",
-//     value: "ADD_ROLE"
-//   },
-//   {
-//     name: "Remove Role",
-//     value: "REMOVE_ROLE"
-//   },
-//   {
-//     name: "View All Departments",
-//     value: "VIEW_DEPARTMENTS"
-//   },
-//   {
-//     name: "Add Department",
-//     value: "ADD_DEPARTMENT"
-//   },
-//   {
-//     name: "Remove Department",
-//     value: "REMOVE_DEPARTMENT"
-//   },
-//   {
-//     name: "View Total Utilized Budget By Department",
-//     value: "VIEW_UTILIZED_BUDGET_BY_DEPARTMENT"
-//   },
+  // Creates a new role
+  addRole(role) {
+    return this.connection.promise().query(
+        "INSERT Into role SET ?",
+        role);
+  }
 
+  // Removes a role from db
+  removeRole(roleId) {
+    return this.connection.promise().query(
+        "DELETE FROM role WHERE id ?",
+        roleId);
+  }
 
+  // Finds all departments
+  findAllDepartments() {
+    return this.connection.promise().query(
+        "SELECT department.id, department.name FROM department;");
+  }
+
+  // Adds a new department
+  addDepartment(department) {
+    return this.connection.promise().query(
+        "INSERT Into department SET ?",
+        department);
+  }
+
+  // Removes a department from db
+  removeDepartment(departmentId) {
+    return this.connection.promise().query(
+        "DELETE FROM department WHERE id ?",
+        departmentId);
+  }
+
+  // Finds all departments, joins employees and their roles and totals up the departments utilized budget
+  viewDepartmentBudgets() {
+    return this.connection.promise().query(
+        "SELECT department.id, department.name, SUM(role.salary) AS utilized_budget FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.id, department.name;");
+  }
 }
 
 module.exports = new DB(connection);
