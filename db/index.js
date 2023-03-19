@@ -1,4 +1,4 @@
-const connection = require("./connections");
+const connection = require("./connection");
 
 class DB {
   constructor(connection) {

@@ -1,6 +1,7 @@
 // Get the client
 const mysql = require('mysql2');
 
+
 // Creates the connection to database
 const connection = mysql.createConnection({
   host: 'localhost',
