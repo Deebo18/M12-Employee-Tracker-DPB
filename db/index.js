@@ -12,23 +12,15 @@ class DB {
     );
   }
 
-  // Finds all employees by their department. Joins employee with the role and title
-  findAllEmployeesByDepartment(departmentId) {
+  // Find all possible managers except the given employee id
+  findAllPossibleManagers(employeeId) {
     return this.connection.promise().query(
-      "SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department department on role.department_id = department.id WHERE department.id = ?;",
-      departmentId
+      "SELECT id, first_name, last_name FROM employee WHERE id != ?",
+      employeeId
     );
   }
 
-  // Finds all employees by their manager. Joins them with the depart and roles to display their title and department name
-  findAllEmployeesByManager(managerId) {
-    return this.connection.promise().query(
-      "SELECT employee.id, employee.first_name, employee.last_name, department.name AS department, role.title FROM employee LEFT JOIN role on role.id = employee.role_id LEFT JOIN department ON department.id = role.department_id WHERE manager_id = ?;",
-      managerId
-    );
-  }
-
-  // Creates a new employee
+    // Creates a new employee
   createEmployee(employee) {
     return this.connection.promise().query(
         "INSERT INTO employee SET ?",
@@ -66,7 +58,7 @@ class DB {
         "SELECT role.id, role.title, department.name AS department, role.salary FROM role LEFT JOIN department on role.department_id = department.id;"
     );
   }
-  
+
   // Creates a new role
   addRole(role) {
     return this.connection.promise().query(
@@ -87,6 +79,12 @@ class DB {
         "SELECT department.id, department.name FROM department;");
   }
 
+  // Finds all departments, joins employees and their roles and totals up the departments utilized budget
+  viewDepartmentBudgets() {
+    return this.connection.promise().query(
+        "SELECT department.id, department.name, SUM(role.salary) AS utilized_budget FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.id, department.name;");
+  }
+
   // Adds a new department
   addDepartment(department) {
     return this.connection.promise().query(
@@ -101,10 +99,20 @@ class DB {
         departmentId);
   }
 
-  // Finds all departments, joins employees and their roles and totals up the departments utilized budget
-  viewDepartmentBudgets() {
+  // Finds all employees by their department. Joins employee with the role and title
+  findAllEmployeesByDepartment(departmentId) {
     return this.connection.promise().query(
-        "SELECT department.id, department.name, SUM(role.salary) AS utilized_budget FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department on role.department_id = department.id GROUP BY department.id, department.name;");
+      "SELECT employee.id, employee.first_name, employee.last_name, role.title FROM employee LEFT JOIN role on employee.role_id = role.id LEFT JOIN department department on role.department_id = department.id WHERE department.id = ?;",
+      departmentId
+    );
+  }
+
+  // Finds all employees by their manager. Joins them with the depart and roles to display their title and department name
+  findAllEmployeesByManager(managerId) {
+    return this.connection.promise().query(
+      "SELECT employee.id, employee.first_name, employee.last_name, department.name AS department, role.title FROM employee LEFT JOIN role on role.id = employee.role_id LEFT JOIN department ON department.id = role.department_id WHERE manager_id = ?;",
+      managerId
+    );
   }
 }
 
